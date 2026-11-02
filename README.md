@@ -1,13 +1,11 @@
-# Glyde Keyboard
+# Glyde
 
-Glass + gradient Android keyboard (Kotlin, custom Canvas view, Compose settings app).
+A liquid glass Android keyboard.
 
-## Roadmap
-- [x] **Phase 1** — core typing, glass & gradient themes, key animations, haptics, settings app, icon
-- [ ] **Phase 2** — swipe typing, offline suggestions, clipboard history, snippets
-- [ ] **Phase 3** — Hindi / Urdu / Kashmiri layouts + transliteration
-- [ ] **Phase 4** — emoji / GIF, voice typing, translator, toolbar, incognito, backup
+- Liquid glass keys with specular gloss, glowing rims and touch ripples
+- Keys that bulge toward your finger and spring back
+- Gradient themes (Ocean, Sunset, Aurora, Coral, Mango, Daylight, Midnight)
+- Long-press accents, space-bar cursor drag, double-space period, auto-capitalise
+- Haptics, optional key sounds, adjustable height and glass strength
 
-## Build
-CI builds a debug APK on every push (Actions → "Build APK" → artifact `glyde-debug-apk`).
-Locally: `gradle assembleDebug` (Gradle 8.7+, JDK 17).
+Release APKs are built by GitHub Actions on every push to `main` and published under Releases.

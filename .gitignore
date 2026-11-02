@@ -1,8 +1,7 @@
-.gradle/
 build/
-local.properties
-*.iml
+.gradle/
 .idea/
+*.iml
+local.properties
 .DS_Store
-*.apk
-*.keystore
+app/glyde.jks
