@@ -43,7 +43,39 @@ class GlydePrefs(context: Context) {
         get() = sp.getBoolean("ambient", false)
         set(v) { sp.edit().putBoolean("ambient", v).apply() }
 
+    var suggest: Boolean
+        get() = sp.getBoolean("suggest", true)
+        set(v) { sp.edit().putBoolean("suggest", v).apply() }
+
+    var autocorrect: Boolean
+        get() = sp.getBoolean("autocorrect", true)
+        set(v) { sp.edit().putBoolean("autocorrect", v).apply() }
+
+    var swipe: Boolean
+        get() = sp.getBoolean("swipe", true)
+        set(v) { sp.edit().putBoolean("swipe", v).apply() }
+
+    var incognito: Boolean
+        get() = sp.getBoolean("incognito", false)
+        set(v) { sp.edit().putBoolean("incognito", v).apply() }
+
+    var clipboardOn: Boolean
+        get() = sp.getBoolean("clipboard_on", true)
+        set(v) { sp.edit().putBoolean("clipboard_on", v).apply() }
+
+    /** Comma separated language ids the globe key cycles through. */
+    var enabledLangs: List<String>
+        get() = (sp.getString("langs", "en") ?: "en").split(',').filter { it.isNotBlank() }.ifEmpty { listOf("en") }
+        set(v) { sp.edit().putString("langs", v.joinToString(",")).apply() }
+
+    var lang: String
+        get() = sp.getString("lang", "en") ?: "en"
+        set(v) { sp.edit().putString("lang", v).apply() }
+
     /** Everything the keyboard view needs to redraw; haptic and sound are read live. */
     fun signature(): String =
-        listOf(theme, heightScale, glass, numberRow, keyPreview, liquid, ambient).joinToString("|")
+        listOf(
+            theme, heightScale, glass, numberRow, keyPreview, liquid, ambient,
+            suggest, swipe, incognito, lang, enabledLangs.joinToString(",")
+        ).joinToString("|")
 }
