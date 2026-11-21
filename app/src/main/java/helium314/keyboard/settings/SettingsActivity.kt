@@ -144,7 +144,7 @@ open class SettingsActivity : ComponentActivity(), SharedPreferences.OnSharedPre
                                 },
                                 content = { Text("Crash report files found") },
                             )
-                        } else if (JniUtils.sHaveGestureLib && System.currentTimeMillis() < END_DATE_EPOCH_MILLIS + TWO_WEEKS_IN_MILLIS) {
+                        } else if (JniUtils.sUserGestureLib && System.currentTimeMillis() < END_DATE_EPOCH_MILLIS + TWO_WEEKS_IN_MILLIS) {
                             GestureDataGatheringSettings.GestureDataPromotionReminderDialog()
                         }
                     }

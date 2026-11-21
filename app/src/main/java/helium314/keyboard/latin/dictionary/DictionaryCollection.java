@@ -64,6 +64,11 @@ public final class DictionaryCollection extends Dictionary {
     }
 
     @Override
+    public void forEachWord(final WordConsumer consumer) {
+        for (final Dictionary dictionary : mDictionaries) dictionary.forEachWord(consumer);
+    }
+
+    @Override
     public boolean isInDictionary(final String word) {
         for (int i = mDictionaries.size() - 1; i >= 0; --i)
             if (mDictionaries.get(i).isInDictionary(word)) return true;

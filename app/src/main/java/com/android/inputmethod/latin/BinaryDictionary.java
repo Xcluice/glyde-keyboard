@@ -406,6 +406,30 @@ public final class BinaryDictionary extends Dictionary {
                 outShortcutProbabilities);
     }
 
+    /**
+     * Iterates all words together with their probability. [lock] (optional) is try-locked around every
+     * native access, so that closing the dictionary is never blocked for long. Stops if the lock is unavailable.
+     */
+    public void forEachWord(final Dictionary.WordConsumer consumer,
+            final java.util.concurrent.locks.Lock lock) {
+        final int[] codePoints = new int[DICTIONARY_MAX_WORD_LENGTH];
+        final boolean[] isBeginningOfSentence = new boolean[1];
+        int token = 0;
+        int guard = 0;
+        do {
+            if (lock != null && !lock.tryLock()) return;
+            try {
+                if (!isValidDictionary()) return;
+                token = getNextWordNative(mNativeDict, token, codePoints, isBeginningOfSentence);
+                final String word = StringUtils.getStringFromNullTerminatedCodePointArray(codePoints);
+                if (!isBeginningOfSentence[0] && !word.isEmpty())
+                    consumer.accept(word, getFrequency(word));
+            } finally {
+                if (lock != null) lock.unlock();
+            }
+        } while (token != 0 && ++guard < 2_000_000);
+    }
+
     public static class GetNextWordPropertyResult {
         public WordProperty mWordProperty;
         public int mNextToken;

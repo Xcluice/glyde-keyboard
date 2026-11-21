@@ -171,7 +171,7 @@ fun setUseBackgroundGathering(context: Context, editorInfo: EditorInfo): Boolean
 }
 
 private fun isBackgroundGatheringUsed(context: Context, editorInfo: EditorInfo): Boolean {
-    if (!JniUtils.sHaveGestureLib) return false
+    if (!JniUtils.sUserGestureLib) return false
     if (!GestureDataGatheringSettings.isBackgroundGatheringEnabled(context.prefs())) return false
     if (Settings.getValues().mIncognitoModeEnabled) return false
     val inputAttributes = InputAttributes(editorInfo, false, "")

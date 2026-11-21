@@ -39,7 +39,10 @@ public final class JniUtils {
         };
     }
 
+    /** true if glide typing is available (a native library, or the built-in open decoder) */
     public static boolean sHaveGestureLib = false;
+    /** true only if a native glide typing library was actually loaded */
+    public static boolean sUserGestureLib = false;
     static {
         // hardcoded default path, may not work on all phones
         @SuppressLint("SdCardPath") String filesDir = "/data/data/" + BuildConfig.APPLICATION_ID + "/files";
@@ -108,6 +111,8 @@ public final class JniUtils {
                 Log.w(TAG, "Could not load native library " + JNI_LIB_NAME, ul);
             }
         }
+        sUserGestureLib = sHaveGestureLib;
+        sHaveGestureLib = true; // built-in open glide decoder is used when no native library was loaded
     }
 
     private JniUtils() {

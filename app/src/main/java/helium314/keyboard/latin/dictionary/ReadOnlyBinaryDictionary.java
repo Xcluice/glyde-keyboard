@@ -62,6 +62,11 @@ public final class ReadOnlyBinaryDictionary extends Dictionary {
     }
 
     @Override
+    public void forEachWord(final WordConsumer consumer) {
+        mBinaryDictionary.forEachWord(consumer, mLock.readLock());
+    }
+
+    @Override
     public boolean isInDictionary(final String word) {
         if (mLock.readLock().tryLock()) {
             try {

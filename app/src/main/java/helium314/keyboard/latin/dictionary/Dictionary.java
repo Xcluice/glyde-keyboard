@@ -141,6 +141,15 @@ public abstract class Dictionary {
         // empty base implementation
     }
 
+    /** Receives every word of a dictionary together with its probability. */
+    public interface WordConsumer {
+        void accept(String word, int probability);
+    }
+
+    /** Calls [consumer] for every word in this dictionary. Used by the built-in glide typing decoder. Default: no words. */
+    public void forEachWord(final WordConsumer consumer) {
+    }
+
     public void onFinishInput() {
         //empty base implementation
     }

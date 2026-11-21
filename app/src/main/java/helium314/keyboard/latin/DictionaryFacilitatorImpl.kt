@@ -28,6 +28,8 @@ import helium314.keyboard.latin.dictionary.UserBinaryDictionary
 import helium314.keyboard.latin.permissions.PermissionsUtil
 import helium314.keyboard.latin.dictionary.history.UserHistoryDictionary
 import helium314.keyboard.latin.settings.Settings
+import helium314.keyboard.latin.glide.GlideDecoder
+import helium314.keyboard.latin.utils.JniUtils
 import helium314.keyboard.latin.settings.SettingsValuesForSuggestion
 import helium314.keyboard.latin.suggestions.SuggestedWords
 import helium314.keyboard.latin.suggestions.SuggestedWordInfo
@@ -503,6 +505,10 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
         composedData: ComposedData, ngramContext: NgramContext, keyboard: Keyboard,
         settingsValuesForSuggestion: SettingsValuesForSuggestion, sessionId: Int, inputStyle: InputStyle
     ): SuggestionResults {
+        if (!JniUtils.sUserGestureLib && !composedData.mIsBatchMode && Settings.getValues().mGestureInputEnabled) {
+            // build the glide word index in the background so the first swipe already works
+            for (group in dictionaryGroups) group.getDict(Dictionary.TYPE_MAIN)?.let { GlideDecoder.prepare(it) }
+        }
         val proximityInfoHandle = keyboard.proximityInfo.nativeProximityInfo
         val weightOfLangModelVsSpatialModel = floatArrayOf(Dictionary.NOT_A_WEIGHT_OF_LANG_MODEL_VS_SPATIAL_MODEL)
 
@@ -511,12 +517,12 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
         for (i in 1..dictionaryGroups.lastIndex) {
             scope.launch {
                 suggestionsArray[i] = getSuggestions(composedData, ngramContext, settingsValuesForSuggestion, sessionId,
-                    proximityInfoHandle, weightOfLangModelVsSpatialModel, dictionaryGroups[i])
+                    proximityInfoHandle, weightOfLangModelVsSpatialModel, dictionaryGroups[i], keyboard)
                 waitForOtherDicts?.countDown()
             }
         }
         suggestionsArray[0] = getSuggestions(composedData, ngramContext, settingsValuesForSuggestion, sessionId,
-            proximityInfoHandle, weightOfLangModelVsSpatialModel, dictionaryGroups[0])
+            proximityInfoHandle, weightOfLangModelVsSpatialModel, dictionaryGroups[0], keyboard)
         val suggestionResults = SuggestionResults(
             SuggestedWords.MAX_SUGGESTIONS, ngramContext, false
         )
@@ -535,15 +541,19 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
     private fun getSuggestions(
         composedData: ComposedData, ngramContext: NgramContext,
         settingsValuesForSuggestion: SettingsValuesForSuggestion, sessionId: Int,
-        proximityInfoHandle: Long, weightOfLangModelVsSpatialModel: FloatArray, dictGroup: DictionaryGroup
+        proximityInfoHandle: Long, weightOfLangModelVsSpatialModel: FloatArray, dictGroup: DictionaryGroup, keyboard: Keyboard
     ): List<SuggestedWordInfo> {
+        val useBuiltInGlide = composedData.mIsBatchMode && !JniUtils.sUserGestureLib
         val suggestions = ArrayList<SuggestedWordInfo>()
         val weightForLocale = dictGroup.getWeightForLocale(dictionaryGroups, composedData.mIsBatchMode)
         for (dictType in DictionaryFacilitator.ALL_DICTIONARY_TYPES) {
             val dictionary = dictGroup.getDict(dictType) ?: continue
-            val dictionarySuggestions = dictionary.getSuggestions(composedData, ngramContext, proximityInfoHandle,
+            val dictionarySuggestions = (if (useBuiltInGlide) {
+                if (dictType != Dictionary.TYPE_MAIN) continue
+                GlideDecoder.suggest(dictionary, composedData, keyboard, weightForLocale)
+            } else dictionary.getSuggestions(composedData, ngramContext, proximityInfoHandle,
                 settingsValuesForSuggestion, sessionId, weightForLocale, weightOfLangModelVsSpatialModel
-            ) ?: continue
+            )) ?: continue
 
             // For some reason "garbage" words are produced when glide typing. For user history
             // and main dictionaries we can filter them out by checking whether the dictionary
